@@ -1,0 +1,14 @@
+FROM node:lts-alpine
+
+ENV APP_PATH="/usr/src"
+ENV NODE_ENV=development
+ENV PORT=8080
+
+RUN apk add --update build-base tzdata 1>/dev/null && npm install -g webpack webpack-cli
+RUN mkdir -p $APP_PATH
+WORKDIR $APP_PATH
+COPY ./frontend $APP_PATH
+RUN npm config set registry http://registry.npmjs.org/ && npm install
+
+EXPOSE $PORT
+# RUN webpack

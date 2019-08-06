@@ -23,6 +23,21 @@ services:
       - "3000:3000"
     depends_on:
       - db
+  frontend:
+    build:
+      context: "${PWD}"
+      dockerfile: "${PWD}/docker/Dockerfile-frontend"
+    command: ash -c "/bin/ash -c 'while [[ true ]]; do sleep 10; done'"
+    environment:
+      PAGER: more
+    volumes:
+      - "${PWD}/frontend:/usr/src:Z"
+      - dru1-bundle:/usr/local/bundle
+      - dru1-gem:/root/.gem
+      - dru1-apk:/var/cache/apk
+    ports:
+      - "4000:4000"
+      - "8080:8080"
 volumes:
   dru1-bundle:
   dru1-gem:
