@@ -1,7 +1,9 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
+import axios from 'axios';
 import Input from "./Input.jsx";
 import Button from "./Button.jsx";
+import Entries from "./Entries.jsx";
 
 class Container extends Component {
   constructor() {
@@ -9,10 +11,12 @@ class Container extends Component {
 
     this.state = {
       input: "",
+      entries: [],
     };
 
     this.handleClick = this.handleClick.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.getDataAxios = this.getDataAxios.bind(this);
   }
 
   handleChange(event) {
@@ -21,23 +25,35 @@ class Container extends Component {
 
   handleClick(event) {
     if (this.state.input != undefined && this.state.input.length > 0) {
-      console.log(this.state.input);
+      this.getDataAxios(this.state.input);
+      console.log(this.state);
     }
+  }
+
+  getDataAxios(searchRequest) {
+    axios.get('http://0.0.0.0:3000/api/v1/number_plan_entries', { params: { search: searchRequest } })
+        .then(res => {
+          const entries = res.data;
+          this.setState({ entries: entries });
+        });
   }
 
   render() {
     const { seo_title } = this.state;
     return (
-      <form>
-        <div className="form-group">
-          <div className="input-group mb-3">
-            <div className="input-group-append">
-              <Input handleChange={this.handleChange} />
-              <Button handleClick={this.handleClick} /> 
+      <div>
+        <form>
+          <div className="form-group">
+            <div className="input-group mb-3">
+              <div className="input-group-append">
+                <Input handleChange={this.handleChange} />
+                <Button handleClick={this.handleClick} />
+              </div>
             </div>
           </div>
-        </div>
-      </form>
+        </form>
+        <Entries entries={this.state.entries}/>
+      </div>
     );
   }
 }
