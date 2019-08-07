@@ -15,6 +15,7 @@ class Container extends Component {
       pagesCount: 0,
       entries: [],
       searchQueryParams: {},
+      requestSent: false,
     };
 
     this.handleSearchClick = this.handleSearchClick.bind(this);
@@ -46,12 +47,18 @@ class Container extends Component {
   }
 
   getDataAxios() {
-    axios.get('http://0.0.0.0:3000/api/v1/number_plan_entries', { params: this.state.searchQueryParams })
-         .then(res => {
-           const entries = res.data.data;
-           const pagesCount = res.data.count;
-           this.setState((state, props) => ({ entries: entries, pagesCount: pagesCount }));
-         });
+    if (this.state.requestSent) return;
+    this.setState({ requestSent: true }, () => {
+      axios.get('http://0.0.0.0:3000/api/v1/number_plan_entries', { params: this.state.searchQueryParams })
+           .then(res => {
+             const entries = res.data.data;
+             const pagesCount = res.data.count;
+             this.setState((state, props) => ({ entries: entries, pagesCount: pagesCount }));
+           })
+           .finally(() => {
+             this.setState((state, props) => ({ requestSent: false }));
+           });
+    });
   }
 
   render() {
