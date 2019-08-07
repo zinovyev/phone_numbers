@@ -4,6 +4,7 @@ import axios from 'axios';
 import Input from "./Input.jsx";
 import Button from "./Button.jsx";
 import Entries from "./Entries.jsx";
+import Pagination from "./Pagination.jsx";
 
 class Container extends Component {
   constructor() {
@@ -11,31 +12,46 @@ class Container extends Component {
 
     this.state = {
       input: "",
+      pagesCount: 0,
       entries: [],
+      searchQueryParams: {},
     };
 
-    this.handleClick = this.handleClick.bind(this);
+    this.handleSearchClick = this.handleSearchClick.bind(this);
+    this.handlePageClick = this.handlePageClick.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.getDataAxios = this.getDataAxios.bind(this);
   }
 
-  handleChange(event) {
-    this.setState({ input: event.target.value });
+  handleChange(e) {
+    this.setState({ input: e.target.value });
   }
 
-  handleClick(event) {
+  handleSearchClick(e) {
     if (this.state.input != undefined && this.state.input.length > 0) {
-      this.getDataAxios(this.state.input);
-      console.log(this.state);
+      var searchQueryParams = { search: this.state.input }
+      this.setState({ searchQueryParams: searchQueryParams }, () => {
+        this.getDataAxios();
+      });
     }
   }
 
-  getDataAxios(searchRequest) {
-    axios.get('http://0.0.0.0:3000/api/v1/number_plan_entries', { params: { search: searchRequest } })
-        .then(res => {
-          const entries = res.data;
-          this.setState({ entries: entries });
-        });
+  handlePageClick(e, pageNum = 1) {
+    if (this.state.input != undefined && this.state.input.length > 0) {
+      var searchQueryParams = { search: this.state.input, page: pageNum }
+      this.setState({ searchQueryParams: searchQueryParams }, () => {
+        this.getDataAxios();
+      });
+    }
+  }
+
+  getDataAxios() {
+    axios.get('http://0.0.0.0:3000/api/v1/number_plan_entries', { params: this.state.searchQueryParams })
+         .then(res => {
+           const entries = res.data.data;
+           const pagesCount = res.data.count;
+           this.setState((state, props) => ({ entries: entries, pagesCount: pagesCount }));
+         });
   }
 
   render() {
@@ -47,12 +63,13 @@ class Container extends Component {
             <div className="input-group mb-3">
               <div className="input-group-append">
                 <Input handleChange={this.handleChange} />
-                <Button handleClick={this.handleClick} />
+                <Button handleClick={this.handleSearchClick} />
               </div>
             </div>
           </div>
         </form>
-        <Entries entries={this.state.entries}/>
+        <Entries entries={this.state.entries} />
+        <Pagination pagesCount={this.state.pagesCount} handleClick={this.handlePageClick} />
       </div>
     );
   }

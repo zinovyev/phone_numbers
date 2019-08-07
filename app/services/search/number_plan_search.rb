@@ -2,9 +2,10 @@ module Search
   class NumberPlanSearch
     attr_reader :full_query, :relation
 
-    def initialize(relation, full_query)
+    def initialize(relation, full_query, options = {})
       @relation = relation
       @full_query = full_query
+      @options = default_options.merge(options)
     end
 
     def call
@@ -18,7 +19,8 @@ module Search
         SELECT "#{table_name}".*, ts_rank(textsearchable_index_col, query) AS rank
         FROM "#{table_name}", to_tsquery(?) query
         WHERE textsearchable_index_col @@ query
-        ORDER BY rank DESC;
+        ORDER BY rank DESC
+        LIMIT #{per_page} OFFSET #{offset}
       SQL
     end
 
@@ -53,6 +55,18 @@ module Search
 
     def subqueries
       full_query.gsub(/"|'/, '')&.split(/\s/) || []
+    end
+
+    def offset
+      offset = @options[:page].to_i * @options[:per_page].to_i
+      offset >= 0 ? offset : 0
+    end
+
+    def default_options
+      {
+        page: 1,
+        per_page: 10,
+      }
     end
   end
 end

@@ -7,13 +7,20 @@ module Api
 
       private
 
+      def page
+        page = params[:page].to_i
+        (page && page > 0) ? page : 1
+      end
+
       def search_query
         params[:search]
       end
 
       def resources
-        return [] unless search_query
-        NumberPlanEntry.search(search_query)
+        @resources ||= begin
+          return [] unless search_query
+          NumberPlanEntry.search(search_query, page: page)
+        end
       end
     end
   end

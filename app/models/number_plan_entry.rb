@@ -15,8 +15,8 @@
 
 class NumberPlanEntry < ApplicationRecord
   class << self
-    def search(query)
-      NumberPlan::Search.new(NumberPlanEntry, query).call
+    def search(query, options = {})
+      NumberPlan::Search.new(NumberPlanEntry, query, options).call
     end
   end
 
